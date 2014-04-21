@@ -62,18 +62,24 @@ def command_line_parsing():
       help="Final output format (gdal ids).", metavar="string")
     (options, args) = parser.parse_args()
 
+    any_options = False
     if options.input_path != None: 
         input_path = options.input_path
+        any_options = True
     else:
         input_path = os.getcwd()+os.sep
     if options.output_path != None: 
         output_path = options.output_path
+        any_options = True
     else:
         output_path = os.getcwd()+os.sep
     if options.output_format != None: 
         output_format = options.output_format
+        any_options = True
     else:
         output_format = "GTiff"
+    if any_options == False:
+        print parser.print_help()
     return input_path, output_path, output_format
            
            
@@ -91,7 +97,7 @@ def main():
     print 'Version: ' + __version__
     print 'Author: ' + __author__
     print 'License: ' + __license__
-    print   
+    print 
     
     input_path, output_path, output_format = command_line_parsing()
     
