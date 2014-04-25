@@ -58,6 +58,8 @@ def command_line_parsing():
       help="Path to the input folder.", metavar="string")
     parser.add_option("-o", nargs=1, dest="output_path",
       help="Path to the output folder.", metavar="string")
+    parser.add_option("-f", nargs=1, dest="input_format",
+      help="Input file format extension.", metavar="string")
     parser.add_option("-c", nargs=1, dest="output_format",
       help="Final output format (gdal ids).", metavar="string")
     (options, args) = parser.parse_args()
@@ -73,6 +75,11 @@ def command_line_parsing():
         any_options = True
     else:
         output_path = os.getcwd()+os.sep
+    if options.input_format != None: 
+        input_format = options.input_format
+        any_options = True
+    else:
+        input_format = "tif"
     if options.output_format != None: 
         output_format = options.output_format
         any_options = True
@@ -80,7 +87,7 @@ def command_line_parsing():
         output_format = "GTiff"
     if any_options == False:
         print parser.print_help()
-    return input_path, output_path, output_format
+    return input_path, output_path, input_format, output_format
            
            
 def main():
@@ -99,9 +106,9 @@ def main():
     print 'License: ' + __license__
     print 
     
-    input_path, output_path, output_format = command_line_parsing()
+    input_path, output_path, input_format, output_format = command_line_parsing()
     
-    satellite_datasets=locate("*.tif", "*", input_path)
+    satellite_datasets=locate("*" + input_format, "*", input_path)
 
     if not os.path.exists(output_path):
         os.mkdir(output_path)
