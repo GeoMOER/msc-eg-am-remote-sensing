@@ -57,6 +57,13 @@ getSceneCoef <- function(filepath, band, coef = "rad", sensor){
     }
     cal.add <- 0.0
   }
+  if(length(cal.mult) == 0){
+    cal.mult = 1.0
+  }
+  if(length(cal.add) == 0){
+    cal.add = 0.0
+  }
+  
   selv <- as.numeric(as.character(
     subset(cal.data$V2, gsub("\\s","", cal.data$V1) == "SUN_ELEVATION")))
   sazm <- as.numeric(as.character(

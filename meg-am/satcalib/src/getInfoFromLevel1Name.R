@@ -31,19 +31,19 @@ getInfoFromLevel1Name <- function(filepath, sensor){
   if(sensor == "landsat"){
     pos <- gregexpr(pattern ='_B', 
                     sub("(.+)[.][^.]+$", "\\1", 
-                        basename(act.filepath)))[[1]][1]
-    band <- substr(basename(act.filepath), pos + 2, 
-                   nchar(sub("(.+)[.][^.]+$", "\\1", basename(act.filepath))))
-    meta.filepath <- paste0(dirname(act.filepath), "/", 
-                            substr(basename(act.filepath), 1, pos), 
+                        basename(filepath)))[[1]][1]
+    band <- substr(basename(filepath), pos + 2, 
+                   nchar(sub("(.+)[.][^.]+$", "\\1", basename(filepath))))
+    meta.filepath <- paste0(dirname(filepath), "/", 
+                            substr(basename(filepath), 1, pos), 
                             "MTL.txt")
   } else if(sensor == "hyperion"){
     pos <- gregexpr(pattern ='_B', 
                     sub("(.+)[.][^.]+$", "\\1", 
-                        basename(act.filepath)))[[1]][1]
-    band <- substr(basename(act.filepath), pos + 2, pos +4)
-    meta.filepath <- paste0(dirname(act.filepath), "/", 
-                            substr(basename(act.filepath), 1, pos), 
+                        basename(filepath)))[[1]][1]
+    band <- substr(basename(filepath), pos + 2, pos +4)
+    meta.filepath <- paste0(dirname(filepath), "/", 
+                            substr(basename(filepath), 1, pos), 
                             "MTL_L1T.txt")
   }
   result <- c(band, meta.filepath)

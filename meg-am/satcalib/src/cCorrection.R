@@ -39,7 +39,7 @@ cCorrection <- function(data, szen, sazm, tslp, taspt){
   cos.i <- cos(getValues(tslp)) * cos(szen) + 
     sin(getValues(tslp)) * sin(szen) * cos(sazm - getValues(taspt))
   ck.lm <- lm(getValues(data) ~ cos.i)
-  ck <- ck.lm$coefficients[2] / ck.lm$coefficients[1]
+  ck <- ck.lm$coefficients[1] / ck.lm$coefficients[2]
   data.ic <- data * (cos(szen) + ck) / (cos.i + ck)
   return(data.ic)
 }
