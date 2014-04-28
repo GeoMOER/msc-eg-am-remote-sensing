@@ -1,5 +1,6 @@
-getCalibCoef <- function(filepath, band, coef = "rad", sensor){
-  # Get calibration coefficients from Landsat 8 standard metadata file.
+getSceneCoef <- function(filepath, band, coef = "rad", sensor){
+  # Get calibration coefficients and solar geometry from Landsat 8 or hyperion
+  # standard metadata file.
   #
   # Args:
   #   filepath: path and filename to the landsat metadata file
@@ -10,6 +11,9 @@ getCalibCoef <- function(filepath, band, coef = "rad", sensor){
   #   Vector containing 
   #   - multiplication coefficient [1]
   #   - addition coefficient [2]
+  #   - sun elevation angle [3]
+  #   - sun zenith angle [4]
+  #   - sun azimuth angle [5]
   #
   #  Copyright (C) 2014 Thomas Nauss
   #
@@ -52,8 +56,13 @@ getCalibCoef <- function(filepath, band, coef = "rad", sensor){
       cal.mult <- 0.0
     }
     cal.add <- 0.0
-  } 
-  result <- c(cal.mult, cal.add)
-  attr(result, "Info") <- c("CalMult", "CalAdd")
+  }
+  selv <- as.numeric(as.character(
+    subset(cal.data$V2, gsub("\\s","", cal.data$V1) == "SUN_ELEVATION")))
+  sazm <- as.numeric(as.character(
+    subset(cal.data$V2, gsub("\\s","", cal.data$V1) == "SUN_AZIMUTH")))
+  szen <- 90.0 - selv
+  result <- c(cal.mult, cal.add, selv, szen, sazm)
+  attr(result, "Info") <- c("CalMult", "CalAdd", "SunElev", "SunZen", "SunAzm")
   return(result)
 }

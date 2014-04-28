@@ -10,7 +10,7 @@ allignDataGeometry <- function(data, template, method = "bilinear"){
   #   template: raster or spatial data set from which geometry can be extracted
   #   method: method for resampling ("ngb" or "bilinear")
   #
-  # Returns: raster layer
+  # Returns: raster layer containing geometrically alligned data
   #
   #  Copyright (C) 2014 Thomas Nauss
   #
