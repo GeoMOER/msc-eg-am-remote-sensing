@@ -38,8 +38,10 @@ allignDataGeometry <- function(data, template, method = "bilinear"){
     if(class(template) == "RasterLayer"){
       if(data@ncols - template@ncols >= 2){
         factor <- floor(data@ncols/template@ncols)
-        data <- aggregate(data, fact = factor, fun = mean, 
-                          expand=TRUE)
+        if(factor > 1){
+          data <- aggregate(data, fact = factor, fun = mean, 
+                            expand=TRUE)
+        }
       }
       data <- resample(data, template, method = method)
     }

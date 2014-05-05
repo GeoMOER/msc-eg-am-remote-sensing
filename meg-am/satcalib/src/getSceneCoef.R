@@ -3,9 +3,10 @@ getSceneCoef <- function(filepath, band, coef = "rad", sensor){
   # standard metadata file.
   #
   # Args:
-  #   filepath: path and filename to the landsat metadata file
+  #   filepath: path and filename to the landsat/hyperion metadata file
   #   band: band number for which the coefficients should be retrieved
   #   coef: either "rad" or "ref" for radiance/reflectance coefficients
+  #   sensor: either "landsat" or "hyperion"
   #
   # Returns:
   #   Vector containing 
