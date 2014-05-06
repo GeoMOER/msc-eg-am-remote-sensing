@@ -36,12 +36,10 @@ allignDataGeometry <- function(data, template, method = "bilinear"){
   if(projection(data) == projection(template)){
     data <- crop(data, template, snap = "out")
     if(class(template) == "RasterLayer"){
-      if(data@ncols - template@ncols >= 2){
+      if(data@ncols / template@ncols >= 2){
         factor <- floor(data@ncols/template@ncols)
-        if(factor > 1){
           data <- aggregate(data, fact = factor, fun = mean, 
                             expand=TRUE)
-        }
       }
       data <- resample(data, template, method = method)
     }
