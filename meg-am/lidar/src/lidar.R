@@ -25,7 +25,7 @@ output.path <- "active/moc/am/data/lidar/level_2"
 src.filepath <- "active/moc/github/scripts/meg-am/lidar/src"
 liblas.path <- "C:/OSGeo4w/bin"
 
-compute.grid <- TRUE
+compute.grid <- FALSE
 
 
 #### Set working directory and load libraries ##################################
@@ -54,6 +54,6 @@ sapply(datasets,function(x){
   act.filepath <- x
   print(paste0("Converting ", act.filepath))
   las.data <- las2txt(act.filepath, output.path, liblas.path, 
-                      return.data = TRUE)  
+                      create.shape = TRUE, return.data = TRUE)  
   subsetLidar(las.data, output.path)
 })

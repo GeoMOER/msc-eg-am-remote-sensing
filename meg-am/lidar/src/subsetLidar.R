@@ -29,8 +29,8 @@ subsetLidar <- function(data, input.filepath, output.path){
   #  reports to admin@environmentalinformatics-marburg.de
   
   output.filepath.prefix <- paste0(output.path, "/", 
-                                   substr(basename(act.filepath), 1, 
-                                          nchar(basename(act.filepath)) -4))
+                                   substr(basename(input.filepath), 1, 
+                                          nchar(basename(input.filepath)) -4))
   class <- c(2, 13)
   sapply(class, function(x){
     act.subset <- subset(data, data$CfN == x)
