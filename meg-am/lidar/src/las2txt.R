@@ -32,8 +32,8 @@ las2txt <- function(input.filepath, output.path, liblas.path,
   #  reports to admin@environmentalinformatics-marburg.de
   
   output.filepath.prefix <- paste0(output.path, "/", 
-                                   substr(basename(act.filepath), 1, 
-                                          nchar(basename(act.filepath)) -4))
+                                   substr(basename(input.filepath), 1, 
+                                          nchar(basename(input.filepath)) -4))
   las2txt.exe <- dsn <- switch(Sys.info()[["sysname"]], 
                                "Linux" = paste0(liblas.path, "/las2txt"),
                                "Windows" = paste0(liblas.path, "/las2txt.exe"))
