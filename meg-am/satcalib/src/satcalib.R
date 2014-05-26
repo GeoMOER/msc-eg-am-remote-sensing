@@ -22,11 +22,13 @@
 sensor <- "landsat"
 input.path <- "active/moc/am/data/landsat/l8_2013-07-07_level_1"
 output.path <- "active/moc/am/data/landsat/l8_2013-07-07_level_2"
+rapideye.path <- "active/moc/am/data/rapideye/level_3"
 
+dem.filepath <- "active/moc/am/data/dgm10/dgm10_level_4/"
 hillshade.filepath <- "active/moc/am/data/dgm10/dgm10_level_4/dgm10_mr_hillshade.tif"
 slope.filepath <- "active/moc/am/data/dgm10/dgm10_level_4/dgm10_mr_slope.tif"
 aspect.filepath <- "active/moc/am/data/dgm10/dgm10_level_4/dgm10_mr_aspect.tif"
-crop.filepath <- "active/moc/am/data/landsat/l8_2013-07-07_misc/ws-03-03_area_template.tif"
+crop.filepath <- "active/moc/am/data/templates/crop_template.tif"
 src.filepath <- "active/moc/github/scripts/meg-am/satcalib/src"
 
 rad.unit <- "rad"
@@ -47,15 +49,20 @@ for (i in c("getSceneCoef.R", "getInfoFromLevel1Name.R",
 
 
 #### Crop auxiliary data #######################################################
+# dem.data <- raster(paste0(dsn, dem.filepath, "original/HessenDGM_10m_proj.tif"),
+#                    native = TRUE)
 crop.template <- raster(paste0(dsn, crop.filepath), native = TRUE)
 hillshade.data <- raster(paste0(dsn, hillshade.filepath), native = TRUE)
 slope.data <- raster(paste0(dsn, slope.filepath), native = TRUE)
 aspect.data <- raster(paste0(dsn, aspect.filepath), native = TRUE)
 print("Croping auxiliary data...")
+# dem.data.crop <- allignDataGeometry(dem.data, crop.template)
 hillshade.data.crop <- allignDataGeometry(hillshade.data, crop.template)
 slope.data.crop <- allignDataGeometry(slope.data, crop.template)
 aspect.data.crop <- allignDataGeometry(aspect.data, crop.template)
-
+# writeRaster(dem.data.crop, filename = paste0(dsn, dem.filepath, 
+#                                              "/dgm10_mr.tif"),
+#             format = "GTiff", overwrite = TRUE)
 
 #### Crop, calibrate and illumination correct satellite bands ##################
 # Crop, callibrate and illumination correct each satellite band file and write
@@ -63,7 +70,6 @@ aspect.data.crop <- allignDataGeometry(aspect.data, crop.template)
 datasets <- list.files(path = ".", 
                        pattern =  glob2rx("*.TIF"),
                        full.names = TRUE, recursive = TRUE)
-
 sapply(datasets,function(x){
   act.filepath <- x
   print(paste0("Computing file ", act.filepath))
@@ -72,9 +78,25 @@ sapply(datasets,function(x){
   act.data <-  raster(act.filepath, native = TRUE)
   act.data.crop <- allignDataGeometry(act.data, crop.template)
   act.data.calib <- coef[1] * act.data.crop + coef[2]
-  act.data.calib.ic <- cCorrection(act.data.calib, coef[4], coef[5],
-                                   slope.data.crop, aspect.data.crop)
-  writeRaster(act.data.calib.ic, filename = paste0(dsn, output.path, "/",
+  #act.data.calib.ic <- cCorrection(act.data.calib, coef[4], coef[5],
+  #                                 slope.data.crop, aspect.data.crop)
+  writeRaster(act.data.calib, filename = paste0(dsn, output.path, "/",
                                                    basename(act.filepath)),
               format = "GTiff", overwrite = TRUE)
 })
+
+#### Crop RapidEye #############################################################
+datasets <- list.files(path = paste0(dsn, rapideye.path), 
+                       pattern =  glob2rx("*0.tif$"),
+                       full.names = TRUE, recursive = TRUE)
+sapply(datasets,function(x){
+  act.filepath <- x
+  act.data <- stack(act.filepath)
+  print(paste0("Computing file ", act.filepath))
+  act.data.crop <- allignDataGeometry(act.data, crop.template)
+  writeRaster(act.data.crop, filename = paste0(dsn, rapideye.path, 
+                                                "_processed/",
+                                                basename(act.filepath)),
+              format = "GTiff", overwrite = TRUE)
+})
+

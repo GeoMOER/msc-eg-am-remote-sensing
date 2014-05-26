@@ -44,7 +44,8 @@ allignDataGeometry <- function(data, template, method = "bilinear"){
       data <- resample(data, template, method = method)
     }
   } else {
-    data <- resample(data, template, method = method)
+    data <- projectRaster(data, template, method = method)
   }
   return(data)
 }
+

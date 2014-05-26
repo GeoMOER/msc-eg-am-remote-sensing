@@ -157,8 +157,8 @@ rst.mk <- sapply(sig, function(x){
                        "_", act.sig.char), format = "GTiff", overwrite = TRUE)
   return(act.mk)
 })
-# fls.mk <- list.files(level3.mk.path, pattern = "*.tif", full.names = TRUE)
-# rst.mk <- raster(fls.mk)
+# fls.mk <- list.files(level3.mk.path, pattern = "*.tif$", full.names = TRUE)
+# rst.mk <- stack(fls.mk)
 
 
 #### Visualization #############################################################
