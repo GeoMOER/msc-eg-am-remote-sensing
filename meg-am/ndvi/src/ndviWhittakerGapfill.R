@@ -46,7 +46,7 @@ source(paste0(dsn, src.filepath, "/tsOutliers.R"))
 
 
 #### Download MODIS NDVI data sets #############################################
-dir.create(paste0(dsn, output.path), showWarnings = FALSE)
+#dir.create(paste0(dsn, output.path), showWarnings = FALSE)
 MODISoptions(localArcPath = level3.path, 
              outDirPath = level3.processed.path,
              gdalPath = "C:/OSGeo4W/bin")
@@ -55,7 +55,7 @@ MODISoptions(localArcPath = level3.path,
 
 ## for (i in c("MOD13Q1", "MYD13Q1"))
 for (i in c("MYD13Q1"))
-  runGdal(i, begin = "2001-01-01",
+  runGdal(i, begin = "2014-04-15",
           tileH = 18, tileV = 3, SDSstring = "100000000001", 
           outProj = "EPSG:32632", job = "outProj")
 
