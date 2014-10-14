@@ -29,11 +29,11 @@ sources <- "active/moc/github/scripts/meg-am/landcover"
 library(rgdal)
 library(raster)
 library(irr)
-source(paste0(dsn, sources, "/calculateKappa.R"))
 
 dsn <- switch(Sys.info()[["sysname"]], 
               "Linux" = "/media/permanent/",
               "Windows" = "D:/")
+source(paste0(dsn, sources, "/calculateKappa.R"))
 setwd(paste0(dsn, input.path))
 
 
@@ -42,7 +42,7 @@ setwd(paste0(dsn, input.path))
 prediction <- raster(rasterfile, native = TRUE)
 reference <- readOGR(polygonfile, layer = "training_areas")
 
-overlay <- extract(prediction, reference)
+# overlay <- extract(prediction, reference)
 # save(overlay, file = "overlay.RData")
 load("overlay.RData")
 
@@ -57,8 +57,71 @@ print(contingencytable)
 
 #### Compute statistics ########################################################
 
-kappa2(contingencytable)
+kappa2(test)
 
 # Some more...
 calculateKappa(contingencytable)
 
+ct <- contingencytable
+g <- nrow(ct)
+s <- sum(ct)
+ct <- ct/sum(ct)
+##################
+P0 <- 0
+for (i in 1:g){
+  P0 <- P0 + ct[i,i]
+}
+P0 <- P0 / s
+##################
+
+PE <- 0
+for (i in 1:g){
+  colsum <- 0
+  rowsum <- 0
+  for (j in 1:g) {
+    colsum <- colsum + ct[j,i]
+    rowsum <- rowsum + ct[i,j]
+  }
+  PE <- PE + colsum * rowsum
+}
+PE <- PE / s**2
+
+(P0 - PE)/(1-PE)
+
+PE <- 0
+for (i in 1:g){
+  PE <- PE + sum(ct[,i]) * sum(ct[i,])
+  
+  colsum * rowsum
+}
+PE <- PE / s**2
+
+
+
+
+nrow(contingencytable)
+PA = 0
+for (i in 1:nrow(contingencytable)){
+  PA = PA + contingencytable[i,i]
+}
+PA = PA / sum(contingencytable)
+
+PE = 0
+for (i in 1:nrow(contingencytable)){
+  PE = PE + sum(contingencytable[i,]) * sum(contingencytable[,i])
+}
+PE = PE / sum(contingencytable)**2
+
+(PA - PE)/(1-PE)
+
+Q = 0
+for (i in 1:nrow(contingencytable)){
+  Q = Q + abs(sum(contingencytable[i,]) - sum(contingencytable[,i]))
+}
+Q = Q / sum(contingencytable) / 2
+1-Q
+
+PMax=0
+for (i in 1:cmax) {
+  PMax=PMax+min(sum(ct[i,]),sum(ct[,i]))
+}  
