@@ -1,0 +1,83 @@
+---
+output: html_document
+---
+
+While you have already quite a lot experience in handling data from your 
+course on data management, it does not hurt to get some more hints for filename
+manipulations or collecting information in text files.
+
+### Hints on manipulating filenames
+
+Splitting informatino on the path and filename can be done quite handy using the
+`basename()` and `dirname()` functions of R's base package.
+
+In addition, the following code line might be help if you want to split and 
+recombine filenames based on a certain character or character sequenze in these
+filenames. For example, the following code returns the position of the split
+pattern "_B" in the filename part of the variable `filepath` which holds full 
+path and name of a data file:
+```{r, eval=FALSE}
+split_pattern <- "_B"
+ pos <- gregexpr(pattern =split_pattern, sub("(.+)[.][^.]+$", "\\1", 
+                                             basename(filepath)))[[1]][1]
+```
+
+
+### Hints on collecting metainformation
+If you want to collect specific metainformation from a text file, several things
+have to be considered.
+
+First, you must somehow read the file. If the file contains some kind of
+deliminater between the key words and the actual values, use it and remember
+that a deliminator can also be something like "<" or "=" etc.
+
+Second, you must somehow tell the program what keywords you are looking for.
+Hence, it it might be a good idea to start with defining the respective search 
+terms, i.e. the character strings you are looking for. Here's an example from
+a script which analysis Landsat 8 metadata:
+```{r, eval=FALSE}
+search_term_add_ref <- paste0("REFLECTANCE_ADD_BAND_", bandnumber)
+```
+
+Third, you have to get the respective data line which contains your keyword
+and extract the information. Given the search variable from above and given that
+your metadata is somehow stored in a dataframe called `metadata` which contains
+the keyword you are looking for in the first column (V1) and the value you are 
+looking vor in the second column (V2), such a code line could look like this:
+```{r, eval=FALSE}
+cal_add_ref <- as.numeric(as.character(
+  (subset(metadata$V2, gsub("\\s","", metadata$V1) == search_term_add_ref))))
+```
+
+Fourth, you have to store the results in some kind of list or data frame.
+
+Fifth, if your metadata has e.g. band specific information, you might have to
+collect the information for each band, hense, you have to repeat steps two to
+four several times and combine everything in the end. It does not matter if you
+use a for-loop or an lapply-loop, but the latter comes with a little less 
+overhead since you do not have to define empty storage variables to hold the
+results of each iteration first. So, an lapply-loop structure for such a problem
+can look like that:
+```{r, eval=FALSE}
+metainformation <- lapply(seq(1:number_of_bands), function(x){
+  # This loop iterates x from 1 to the value of the variable number_of_bands
+  # Define search terms
+  ...
+  
+  # Get metainformation based on search terms
+  ...
+  
+  # Handle special cases (e.g. if certain metainformation is only available for
+  # a subset of the lapply loops)
+  ...
+  
+  # Store actual results in a data frame
+  ...
+  })
+  # Combine individual results from the lapply loops into a single data frame
+  metainformation_all <- do.call("rbind", metainformation)
+```
+
+Please note that the above example assumes that you store your loop results
+in a data frame. Of course this can be soleved with other objects, too, but then
+the last line of the code will not work.

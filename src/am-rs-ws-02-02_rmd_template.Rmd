@@ -1,0 +1,79 @@
+---
+title: "W02-2: Dark object substraction"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+library(devtools)
+install_git("git://github.com/environmentalinformatics-marburg/satellite")
+library(satellite)
+
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Reading croped landsat 8 data
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W02-2 to the minute).
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W01-1 to the minute).
+```{r}
+landsat_8 <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop.tif"))
+bands <- names(landsat_8)
+pos <- gregexpr(pattern ='crop', bands)[[1]][1]
+bands <- paste0(substr(bands, 1, pos + 3), "_", c(1:7, 9:11))
+names(landsat_8) <- bands
+names(landsat_8)
+```
+
+### Get metadata information
+Get calibration coefficients from the metadata file using function 
+`satellite::compMetalandsat_8`. Adjust resulting data frame so it contains only
+the bands which are part of the landsat_8 stack.
+```{r}
+meta <- compMetaLandsat(paste0(inpath, "LC81950252013188LGN00_MTL.txt"))
+meta <- meta[!is.na(meta$SPECTRUM) & meta$SRES == 30, ]
+
+```
+
+### Compute atmospheric correction
+Read the help of the `satellite::calcAtmosCorr` function and come up with a step
+by step guide on what to compute first:
+ * Compute ...
+ * Compute ...
+ * Compute ...
+ * Compute ...
+ * Compute ...
+```{r}
+# Your code here
+```
+
+### Convert reflectance back to radiance
+This last topic is not necesseraly required but since we want to combine the
+Landsat 8 data with Landsat 7 and RapidEye later and since we want to use
+radiances, let's convert the atmospheric corrected reflectance back to
+radiance.
+```{r}
+landsat_8_ac_rad <- calibLinearInverse(landsat_8_ac,
+                                       ref_mult = meta$REFM, 
+                                       ref_add = meta$REFA,
+                                       rad_mult = meta$RADM,
+                                       rad_add = meta$RADA,
+                                       szen = meta$SZEN)
+```
+
+### Save the corrected landsat_8 8 data
+Make sure that your saved dataset does only contain solar bands. Assuming that 
+your normalized data is stored in variable `landsat_8_ac_rad`:
+```{r}
+landsat_8_ac_rad <- landsat_8_ac_rad[[...]]
+writeRaster(landsat_8_ac_rad, 
+            filename = paste0(inpath_l8, "l8_2013-07-07_30m_crop_ac_rad.tif"),
+                              format = "GTiff")
+```
