@@ -1,0 +1,93 @@
+---
+title: "W06-2: Relative image normalization"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+Load some libraries and set some pathes.
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(raster)
+library(rgdal)
+library(sp)
+
+library(devtools)
+install_git("git://github.com/environmentalinformatics-marburg/satellite")
+library(satellite)
+
+inpath_l7 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l7_2001-07-30/"
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Load atmosphere corrected Landsat 8 data from W03-1
+The file name assumes that you have followed the template for ws-03-2 to the 
+minute.
+```{r}
+landsat_8_ac_rad_pan <- stack(paste0(inpath_l8, 
+                                 "l8_2013-07-07_30m_crop_ac_rad_pan.tif"))
+```
+
+
+### Reading croped Landsat 7 data
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W01-1 to the minute).
+```{r}
+landsat_7 <- stack(paste0(inpath_l7,"l7_2001-07-30_30m_crop_pan.tif"))
+bands <- names(landsat_7)
+pos <- gregexpr(pattern ='crop', bands)[[1]][1]
+bands <- c(paste0(substr(bands, 1, pos + 7), "_", c(c(1:5), 61, 62, 7)))
+names(landsat_7) <- bands
+names(landsat_7)
+```
+
+### Get metadata information
+Get calibration coefficients from the metadata file using function 
+"satellite::compMetaLandsat". Adjust resulting data frame so it contains only
+the bands which are part of the landsat stack.
+```{r}
+meta <- compMetaLandsat(paste0(inpath_l7, "LE71950252001211EDC00_MTL.txt"))
+meta <- meta[meta$SRES == 30, ]
+
+landsat_7_pan <- calibLinear(band = landsat_7, 
+                     mult = meta$RADM, 
+                     add = meta$RADA)
+```
+
+
+### Optional: convert Landsat 7 DNs to radiance
+This would only be relevant, if the calibration is non-linear but this is not
+the case for Landsat 7.
+```{r}
+# meta <- compMetaLandsat(paste0(inpath, "LE71950252001211EDC00_MTL.txt"))
+# meta <- meta[meta$SRES == 30, ]
+# landsat_7_pan <- calibLinear(band = landsat_7_pan, 
+#                      mult = meta$RADM, 
+#                      add = meta$RADA)
+```
+
+### Mask invariant features
+Use function `satellite::maskInvarFeatures` to mask invariant features in each
+sensor's bands.
+```{r}
+# Your code here
+```
+
+### Normalize Landsat 7 to Landsat 8
+Take only care of solar bands.
+```{r, warning=FALSE}
+# Your code here
+```
+
+### Save the corrected Landsat 7 data
+Assuming that your normalized data is stored in variable `landsat_7_pan`.
+Save bands 1 to 5 and 7 only.
+```{r}
+writeRaster(landsat_7_pan[[c(1, 2, 3, 4, 5, 8)]], 
+            filename = paste0(inpath_l7, "l7_2001-07-30_30m_crop_pan_norm.tif"),
+                              format = "GTiff", overwrite = TRUE)
+```
+```

@@ -1,0 +1,30 @@
+---
+title: "W05-1: Data bundling (Landsat 8)"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Reading Landsat 8 datasets selected for land-cover classification
+```{r}
+# Your code here
+landsat_8_pan <- ...
+
+landsat_8_filter <- ...
+```
+
+### Save the bundled Landsat 8 data
+```{r}
+writeRaster(stack(landsat_8_pan, landsat_8_filter), 
+            filename = paste0(inpath_l8, "l8_2013-07-07_30m_crop_pan_lc_bundle.tif"),
+                              format = "GTiff", overwrite = TRUE)
+```
