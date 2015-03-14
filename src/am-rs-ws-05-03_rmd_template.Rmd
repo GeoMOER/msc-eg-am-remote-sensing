@@ -1,0 +1,43 @@
+---
+title: "W05-3: Accuracy"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_lc <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+inpath_ts <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+```
+
+### Function for computing kappa
+Function to compute kappa based on ...
+```{r}
+compKappa <- function(# Your code here){
+  # Your code here
+  }
+```
+
+### Reading land-cover classification and training site data
+Read classification and training site information (assuming that you have 
+followed W04-x and W05-x to the minute).
+```{r}
+lc <- raster(paste0(inpath_lc,"l8_lc_rf.tif"))
+ts <- readOGR(paste0(inpath_ts, "l8_lc_training_areas_all.shp"), 
+              layer = "l8_lc_training_areas_all")
+```
+
+### Extract validation data pairs and compute contingency table
+```{r}
+# Your code here
+```
+
+### Compute kappa
+```{r}
+# Your code here
+```
