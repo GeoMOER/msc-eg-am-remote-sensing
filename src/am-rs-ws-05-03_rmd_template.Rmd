@@ -35,6 +35,7 @@ ts <- readOGR(paste0(inpath_ts, "l8_lc_training_areas_all.shp"),
 ### Extract validation data pairs and compute contingency table
 ```{r}
 # Your code here
+# The ftable function might be useful.
 ```
 
 ### Compute kappa

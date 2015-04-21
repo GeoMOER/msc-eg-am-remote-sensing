@@ -1,5 +1,5 @@
 ---
-title: "W06-1: Accuracy (Landsat 7)"
+title: "W07-2: Change detection"
 output: html_document
 ---
 
@@ -7,63 +7,35 @@ In order to speed things up a little, here is a template for a markdown file
 which can be used as part of this worksheet.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(latticeExtra)
 library(raster)
 library(rgdal)
 library(sp)
 
-library(devtools)
-install_git("git://github.com/environmentalinformatics-marburg/satellite")
-library(satellite)
-
 inpath_lc <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
-inpath_ts <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
 ```
 
-### Function for computing kappa
+### Reading land-cover classification from 2001 and 2013
 ```{r}
-compKappa <- function(ctable){
-  ctable <- ctable/sum(ctable)
-  categories <- nrow(ctable)
-  
-  # Fraction of agreement
-  pagrm <- 0
-  for(i in seq(categories)){
-    pagrm <- pagrm + ctable[i,i]
-    }
-  
-  # Expected fraction of agreement subject to the observed distribution
-  pexpct <- 0
-  for(i in seq(categories)){
-    pexpct <- pexpct + sum(ctable[i,]) * sum(ctable[,i])
-    }
-  
-  # Kappa index
-  kappa <- (pagrm - pexpct)/(1 - pexpct)
-  }
+lc_2001 <- raster(paste0(inpath_lc,"l7_lc_rf.tif"))
+lc_2013 <- raster(paste0(inpath_lc,"l8_lc_rf.tif"))
 ```
 
-### Reading land-cover classification and training site data
-```{r}
-lc <- raster(paste0(inpath_lc,"l8_lc_rf.tif"))
-ts <- readOGR(paste0(inpath_ts, "l8_lc_training_areas_all.shp"), 
-              layer = "l8_lc_training_areas_all")
-```
-
-### Extract validation data pairs and compute contingency table
-```{r}
-pairs <- extract(lc, ts)
-
-valid <- do.call("rbind", lapply(1:length(ts@data$LC_ID), function(x) {
-  dat <- data.frame(ts@data$LC_ID[x], pairs[x])
-  names(dat) <- c("reference", "prediction")
-  return(dat)
-}))
-contingencytable <- ftable(valid)
-contingencytable
-```
-
-### Compute kappas
-Compute various kappas using `satellite::calcKappa`:
+### Compute differences
+Adjust landcover ids, first.
 ```{r}
 # Your code here
+```
+
+### Visualize the result
+```{r}
+# Your code here
+```
+
+### Save change detection data to file
+Assuming, that the differences are stored in `lc_diff`.
+```{r}
+writeRaster(stack(lc_2001, lc_2013, lc_diff), 
+            filename = paste0(inpath_lc, "change_detection.tif"),
+                              format = "GTiff", overwrite = TRUE)
 ```

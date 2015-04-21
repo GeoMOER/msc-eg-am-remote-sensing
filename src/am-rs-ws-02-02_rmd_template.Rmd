@@ -18,9 +18,7 @@ library(satellite)
 inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
 ```
 
-### Reading croped landsat 8 data
-Read multi-layer geotiff in a stack and adjust the layer names to match the 
-actual band numbers (assuming that you have followed W02-2 to the minute).
+### Reading croped Landsat 8 data
 Read multi-layer geotiff in a stack and adjust the layer names to match the 
 actual band numbers (assuming that you have followed W01-1 to the minute).
 ```{r}
@@ -35,7 +33,7 @@ names(landsat_8)
 ### Get metadata information
 Get calibration coefficients from the metadata file using function 
 `satellite::compMetalandsat_8`. Adjust resulting data frame so it contains only
-the bands which are part of the landsat_8 stack.
+the bands which are part of the Landsat 8 stack.
 ```{r}
 meta <- compMetaLandsat(paste0(inpath, "LC81950252013188LGN00_MTL.txt"))
 meta <- meta[!is.na(meta$SPECTRUM) & meta$SRES == 30, ]
@@ -68,7 +66,7 @@ landsat_8_ac_rad <- calibLinearInverse(landsat_8_ac,
                                        szen = meta$SZEN)
 ```
 
-### Save the corrected landsat_8 8 data
+### Save the corrected Landsat 8 data
 Make sure that your saved dataset does only contain solar bands. Assuming that 
 your normalized data is stored in variable `landsat_8_ac_rad`:
 ```{r}

@@ -1,0 +1,29 @@
+---
+title: "W010-1: Bundling remote sensing and ecology"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_ecol <- "D:/active/moc/am-remote-sensing/examples/data/ecology/"
+```
+
+### Read datasets
+Read remote sensing and ecology datasets and remember to adjust band names
+```{r}
+# Your code here.
+```
+
+### Compile dataset
+Combine vegetation records with plot information and merge with remote sensing 
+dataset. Create a merged shape file for each region and one which contains both
+regions.
+```{r}
+# Your code here.
+```

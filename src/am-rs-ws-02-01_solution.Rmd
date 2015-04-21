@@ -1,0 +1,99 @@
+---
+title: "W02-1: From DNs to physical units"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+library(devtools)
+install_git("git://github.com/environmentalinformatics-marburg/satellite")
+library(satellite)
+
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Reading croped Landsat 8 data
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W01-1 to the minute).
+```{r}
+landsat_8 <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop.tif"))
+bands <- names(landsat_8)
+pos <- gregexpr(pattern ='crop', bands)[[1]][1]
+bands <- paste0(substr(bands, 1, pos + 3), "_", c(1:7, 9:11))
+names(landsat_8) <- bands
+names(landsat_8)
+```
+
+### Get metadata information
+Get calibration coefficients from the metadata file using function 
+"satellite::compMetaLandsat"
+```{r}
+meta <- compMetaLandsat(paste0(inpath, "LC81950252013188LGN00_MTL.txt"))
+```
+
+### Define the function for unit conversion
+```{r}
+calibLinear <-  function(x, mult, add, szen, k1, k2){
+  result <- mult * x + add
+  if(!missing(szen)){
+    result <- result / cos(szen * pi / 180.0)
+  }
+  if(!missing(k1)){
+    result <- k2 / log(k1 / result + 1)
+  }
+  return(result)
+}
+```
+
+
+### Converting band 3 and 10 to radiance
+As an example, band 3 and 10 will be converted to radiance:
+```{r}
+band_03_rad <- calibLinear(landsat_8[[grep("crop_3", names(landsat_8))]], 
+                           mult = meta$RADM[meta$BCDE == "B003n"],
+                           add = meta$RADA[meta$BCDE == "B003n"])
+
+band_10_rad <- calibLinear(landsat_8[[grep("crop_10", names(landsat_8))]], 
+                           mult = meta$RADM[meta$BCDE == "B010n"],
+                           add = meta$RADA[meta$BCDE == "B010n"])
+writeRaster(band_03_rad, 
+            filename = paste0(inpath, "l8_2013-07-07_band_03_rad.tif"),
+                              format = "GTiff", overwrite = TRUE)
+writeRaster(band_10_rad, 
+            filename = paste0(inpath, "l8_2013-07-07_band_10_rad.tif"),
+                              format = "GTiff", overwrite = TRUE)
+# plot(band_03_rad)
+# plot(band_10_rad)
+```
+
+### Converting band 3 to reflectance
+As an example, band 3 will be converted to reflectance:
+```{r}
+band_03_ref <- calibLinear(landsat_8[[grep("crop_3", names(landsat_8))]], 
+                           mult = meta$REFM[meta$BCDE == "B003n"],
+                           add = meta$REFA[meta$BCDE == "B003n"])
+writeRaster(band_03_ref, 
+            filename = paste0(inpath, "l8_2013-07-07_band_03_ref.tif"),
+                              format = "GTiff", overwrite = TRUE)
+# plot(band_03_ref)
+```
+
+### Converting band 10 to brightness temperature
+As an example, band 10 will be converted to brightness temperature:
+```{r}
+band_10_bt <- calibLinear(landsat_8[[grep("crop_10", names(landsat_8))]], 
+                          mult = meta$RADM[meta$BCDE == "B010n"],
+                          add = meta$RADA[meta$BCDE == "B010n"],
+                          k1 = meta$BTK1[meta$BCDE == "B010n"],
+                          k2 = meta$BTK2[meta$BCDE == "B010n"])
+writeRaster(band_10_bt, 
+            filename = paste0(inpath, "l8_2013-07-07_band_10_bt.tif"),
+                              format = "GTiff", overwrite = TRUE)
+# plot(band_10_bt)
+```

@@ -7,6 +7,7 @@ In order to speed things up a little, here is a template for a markdown file
 which can be used as part of this worksheet.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(corrplot)
 library(raster)
 library(rgdal)
 library(sp)
@@ -19,7 +20,15 @@ inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-0
 # Your code here
 landsat_8_pan <- ...
 
+landsat_8_pca <- ...
+
 landsat_8_filter <- ...
+```
+
+### Analyse correlation
+```{r}
+# Your code here (function corrplot will visualize your correlations once you
+# have computed them).
 ```
 
 ### Save the bundled Landsat 8 data
