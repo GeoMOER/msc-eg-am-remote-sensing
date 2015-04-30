@@ -1,0 +1,103 @@
+---
+title: "W02-2: Dark object substraction"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+library(devtools)
+install_git("git://github.com/environmentalinformatics-marburg/satellite")
+library(satellite)
+
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Reading croped landsat 8 data
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W02-2 to the minute).
+Read multi-layer geotiff in a stack and adjust the layer names to match the 
+actual band numbers (assuming that you have followed W01-1 to the minute).
+```{r}
+landsat_8 <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop.tif"))
+bands <- names(landsat_8)
+pos <- gregexpr(pattern ='crop', bands)[[1]][1]
+bands <- paste0(substr(bands, 1, pos + 3), "_", c(1:7, 9:11))
+names(landsat_8) <- bands
+names(landsat_8)
+```
+
+### Get metadata information
+Get calibration coefficients from the metadata file using function 
+"satellite::compMetalandsat_8". Adjust resulting data frame so it contains only
+the bands which are part of the landsat_8 stack.
+```{r}
+meta <- compMetaLandsat(paste0(inpath_l8, "LC81950252013188LGN00_MTL.txt"))
+meta <- meta[!is.na(meta$SPECTRUM) & meta$SRES == 30, ]
+
+```
+
+### Compute the top-of atmosphere solar irradiance
+First, compute top of atmosphere solar irradiance:
+```{r}
+e_sun <- calcTOAIrradRadRef(rad_max = meta$RADMAX, 
+                            ref_max = meta$REFMAX, 
+                            normalize = FALSE,
+                            esd = meta$ESD)
+```
+
+### Compute path radiance
+Second, get the DN of a dark object in band x and compute the path radiance for
+all bands.
+```{r}
+dodn <- calcDODN(landsat_8[[2]])
+
+path_radiance <- calcPathRadDOS(dodn, bnbr = 2, 
+                                band_wls = data.frame(meta$LMIN, meta$LMAX), 
+                                radm = meta$RADM, 
+                                rada = meta$RADA, 
+                                szen = meta$SZEN, 
+                                esun = e_sun, 
+                                model = "DOS2", scat_coef = -4, 
+                                dos_adjust = 0.01)
+```
+
+
+### Compute the atmospheric correction
+Convert band DNs to radiance and compute atmospheric correction.
+```{r}
+landsat_8_rad <- calibLinear(band = landsat_8, 
+                     mult = meta$RADM, 
+                     add = meta$RADA)
+
+landsat_8_ac <- calcAtmosCorr(sensor_rad = landsat_8_rad,
+                              path_rad = path_radiance, 
+                              esun = e_sun,
+                              szen = meta$SZEN, 
+                              model = "DOS2")
+```
+
+### Convert reflectance back to radiance
+```{r}
+landsat_8_ac_rad <- calibLinearInverse(landsat_8_ac,
+                                       ref_mult = meta$REFM, 
+                                       ref_add = meta$REFA,
+                                       rad_mult = meta$RADM,
+                                       rad_add = meta$RADA,
+                                       szen = meta$SZEN)
+
+```
+
+
+### Save the corrected Landsat 8 data
+Save bands 1 to 9 only.
+```{r}
+writeRaster(landsat_8_ac_rad[[1:8]], 
+            filename = paste0(inpath_l8, "l8_2013-07-07_30m_crop_ac_rad.tif"),
+                              format = "GTiff", overwrite = TRUE)
+  ```
