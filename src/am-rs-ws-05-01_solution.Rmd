@@ -1,0 +1,50 @@
+---
+title: "W05-1: Data bundling (Landsat 8)"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(corrplot)
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_l8 <- "D:/active/moc/am-remote-sensing/examples/data/landsat/l8_2013-07-07/"
+```
+
+### Reading Landsat 8 datasets selected for land-cover classification
+```{r}
+landsat_8_pan <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop_ac_rad_pan.tif"))
+bands <- paste0("band_", c(1:7, 9))
+names(landsat_8_pan) <- bands
+names(landsat_8_pan)
+
+landsat_8_pca <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop_ac_rad_pan_pca.tif"))
+bands <- paste0("pca_", c(1:8))
+names(landsat_8_pca) <- bands
+names(landsat_8_pca)
+
+landsat_8_filter <- stack(paste0(inpath_l8,"l8_2013-07-07_30m_crop_ac_rad_pan_pca_3x3.tif"))
+bands <- c("mean", "var", "skew", "kurt")
+names(landsat_8_filter) <- bands
+names(landsat_8_filter)
+```
+
+### Analyse correlation
+```{r}
+landsat_8 <- stack(landsat_8_pan, landsat_8_pca, landsat_8_filter)
+landsat_8_df <- as.data.frame(landsat_8)
+correlation <- cor(landsat_8_df)
+corrplot(correlation)
+landsat_8_use <- landsat_8[[c(1, 3:9, 10, 12:15, 17:20)]]
+```
+
+### Save the bundled Landsat 8 data
+```{r}
+writeRaster(landsat_8_use, 
+            filename = paste0(inpath_l8, "l8_2013-07-07_30m_crop_pan_lc_bundle.tif"),
+            format = "GTiff", overwrite = TRUE)
+```
