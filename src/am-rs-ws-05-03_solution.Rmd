@@ -1,0 +1,68 @@
+---
+title: "W05-3: Accuracy"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_lc <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+inpath_ts <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+```
+
+### Function for computing kappa
+```{r}
+compKappa <- function(ctable){
+  ctable <- ctable/sum(ctable)
+  categories <- nrow(ctable)
+  
+  # Fraction of agreement
+  pagrm <- 0
+  for(i in seq(categories)){
+    pagrm <- pagrm + ctable[i,i]
+    }
+  
+  # Expected fraction of agreement subject to the observed distribution
+  pexpct <- 0
+  for(i in seq(categories)){
+    pexpct <- pexpct + sum(ctable[i,]) * sum(ctable[,i])
+    }
+  
+  # Kappa index
+  kappa <- (pagrm - pexpct)/(1 - pexpct)
+  return(kappa)
+  }
+```
+
+### Reading land-cover classification and training site data
+```{r}
+lc <- raster(paste0(inpath_lc,"l8_lc_rf.tif"))
+ts <- readOGR(paste0(inpath_ts, "l8_lc_training_areas_all.shp"), 
+              layer = "l8_lc_training_areas_all")
+```
+
+### Extract validation data pairs and compute contingency table
+```{r}
+pairs <- extract(lc, ts)
+
+valid <- do.call("rbind", lapply(1:length(ts@data$LC_ID), function(x) {
+  dat <- data.frame(ts@data$LC_ID[x], pairs[x])
+  names(dat) <- c("reference", "prediction")
+  return(dat)
+}))
+contingencytable <- ftable(valid)
+contingencytable
+```
+
+### Compute kappa
+```{r}
+kappa <- compKappa(contingencytable)
+kappa
+```
+
+compContingencyTable
