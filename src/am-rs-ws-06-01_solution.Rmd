@@ -1,0 +1,87 @@
+---
+title: "W06-1: Accuracy, reloaded"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_lc <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+inpath_ts <- "D:/active/moc/am-remote-sensing/examples/data/landcover/"
+```
+
+### Function for computing kappa
+```{r}
+compKappa <- function(ctable){
+  ctable <- ctable/sum(ctable)
+  categories <- nrow(ctable)
+  
+  # Fraction of agreement
+  pagrm <- 0
+  for(i in seq(categories)){
+    pagrm <- pagrm + ctable[i,i]
+    }
+  
+  # Expected fraction of agreement subject to the observed distribution
+  pexpct <- 0
+  for(i in seq(categories)){
+    pexpct <- pexpct + sum(ctable[i,]) * sum(ctable[,i])
+    }
+  
+  #Maximum  Fraction  of  Agreement  subject  to  the  observed  distribution:
+  pmax=0
+  for (i in 1:cmax) {
+    pmax=pmax+min(sum(ct[i,]),sum(ct[,i]))
+  }  
+  #Kappa Index:
+  K=(pagrm-pexpct)/(1-pexpct)
+  #Kappa of location:
+  Kloc=(pagrm-pexpct)/(pmax-pexpct)
+  #Kappa of histogram:
+  Khisto=(pmax-pexpct)/(1-pexpct)
+  #chance agreement:
+  CA=100*min((1/cmax),pagrm,pexpct)
+  #quantity agreement:
+  QA=ifelse(min((1/cmax),pexpct,pagrm)==(1/cmax),100*min((pexpct-1/cmax),pagrm-1/cmax),0)
+  #allocation agreement:
+  AA=100*max(pagrm-pexpct,0)
+  #allocation disagreement:
+  AD=100*(pmax-pagrm)
+  #quantity disagreement:
+  QD=100*(1-pmax)
+  KappaResult=cbind(K,Kloc,Khisto,CA,QA,AA,AD,QD)  
+  return (KappaResult)  
+  }
+```
+
+### Reading land-cover classification and training site data
+```{r}
+lc <- raster(paste0(inpath_lc,"l8_lc_rf.tif"))
+ts <- readOGR(paste0(inpath_ts, "l8_lc_training_areas_all.shp"), 
+              layer = "l8_lc_training_areas_all")
+```
+
+### Extract validation data pairs and compute contingency table
+```{r}
+pairs <- extract(lc, ts)
+
+valid <- do.call("rbind", lapply(1:length(ts@data$LC_ID), function(x) {
+  dat <- data.frame(ts@data$LC_ID[x], pairs[x])
+  names(dat) <- c("reference", "prediction")
+  return(dat)
+}))
+contingencytable <- ftable(valid)
+contingencytable
+```
+
+### Compute kappas
+Compute various kappas using `satellite::calcKappa`:
+```{r}
+kappas <- calcKappa(contingencytable)
+kappas
+```
