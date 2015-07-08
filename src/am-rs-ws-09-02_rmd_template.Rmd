@@ -1,0 +1,62 @@
+---
+title: "W09-2: Bundling the perfect sensors"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+# Your code here
+```
+
+### Load remote sensing data and provide meaningful layer names
+```{r}
+# Your code here
+```
+
+### Project satellite sensor data on lidar geometry and save stacks
+If you followed the plan, all your data has a matching geometry so the only thing
+left is to resample your satellite datasets to the extend of the two
+LiDAR datsets which already match the area of the investigation sites.
+```{r}
+# Your code here
+```
+
+### Save names of stack layer as Rdata
+```{r}
+# Something like this:
+names_hg <- c("re01", "re02", "re03", "re04", "re05", 
+              "repca01", "repca2", "repca03", "repca04", "repca05", 
+              "remean", "revar", "reskew", "rekurt", 
+              "l801", "l802", "l803", "l804", "l805", "l806", "l807", "l809", 
+              "l8pca01", "l8pca02", "l8pca03", "l8pca04", "l8pca5", "l8pca6", 
+              "l8pca07", "l8pca09", 
+              "l8mean", "l8var", "l8skew", "l8kurt", 
+              "c02", "c02mean", "c02max", "c02sd",
+              "c13", "c13mean", "c13max", "c13sd",
+              "intm", "intmmean", "intmmax", "intmsd",
+              "intr", "intrmean", "intrmax", "intrsd",
+              "retm", "retmmean", "retmmax", "retmsd",
+              "zr", "zrmean", "zrmax", "zrsd")
+
+names_db <- c("re01", "re02", "re03", "re04", "re05", 
+              "repca01", "repca2", "repca03", "repca04", "repca05", 
+              "remean", "revar", "reskew", "rekurt", 
+              "l801", "l802", "l803", "l804", "l805", "l806", "l807", "l809", 
+              "l8pca01", "l8pca02", "l8pca03", "l8pca04", "l8pca5", "l8pca6", 
+              "l8pca07", "l8pca09", 
+              "l8mean", "l8var", "l8skew", "l8kurt", 
+              "c02", "c02mean", "c02max", "c02sd",
+              "c13", "c13mean", "c13max", "c13sd",
+              "intm", "intmmean", "intmmax", "intmsd",
+              "intr", "intrmean", "intrmax", "intrsd",
+              "retm", "retmmean", "retmmax", "retmsd",
+              "zr", "zrmean", "zrmax", "zrsd")
+
+save(names_hg, names_db, file = paste0(inpath_ecol, "rs_stack_names.Rdata"))
+```

@@ -1,0 +1,134 @@
+---
+title: "W12-1: Model evaluation"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(corrplot)
+library(rgdal)
+library(sp)
+library(caret)
+
+inpath_ecol <- "D:/active/moc/am-remote-sensing/examples/data/ecology/2015/"
+```
+
+
+### Function for scaling datasets
+```{r}
+scale <- function(df){
+  df_means <- colMeans(df, na.rm = TRUE)
+  df_sds <- apply(df, 2, sd, na.rm=TRUE)
+  df_scale <- lapply(seq(ncol(df)), function(x){
+    (df[,x] - df_means[x]) / df_sds[x]
+    })
+  df_scale <- do.call ("cbind", df_scale)
+  colnames(df_scale) <- colnames(df)
+  return(df_scale)
+  }
+```
+
+
+### Function for creating training and testing datasets
+```{r}
+traintest_df <- function(pred, resp, p=0.75){
+  train_ids <- createDataPartition(resp, p = p, times = 1, list = FALSE)
+  train_resp <- resp[train_ids]
+  train_pred <- pred[train_ids, ]
+  
+  test_resp <- resp[-train_ids]
+  test_pred <- pred[-train_ids, ]
+  return(list(train_resp, train_pred, test_resp, test_pred))
+  }
+```
+
+
+### Read datasets
+Read datasets
+```{r}
+ecol_db <- readOGR(paste0(inpath_ecol, "ecol_db.shp"), layer = "ecol_db")
+ecol_db <- data.frame(ecol_db)
+ecol_hg <- readOGR(paste0(inpath_ecol, "ecol_hg.shp"), layer = "ecol_hg")
+ecol_hg <- data.frame(ecol_hg)
+```
+
+
+### Select response variable and scale predictors
+Make sure that the response is a factor (if you want classification)
+```{r}
+ecol <- ecol_hg
+
+coln_resp <- which(names(ecol) == "d12_k5")
+coln_pred <- c(which(names(ecol)=="re01"):which(names(ecol)=="zrsd"))
+
+resp <- ecol[, coln_resp]
+pred <- ecol[, coln_pred]
+
+pred_scale <- scale(pred)
+summary(pred_scale)
+```
+
+
+### Build model
+First, create a training and independent validation data sample and 
+consider that the respone variable should be sampled in a stratified manner.
+
+Once the samples have been split, define the recursive feature elimination 
+and model tuning settings and build the model.
+
+The final model will be choosen based on the minimum cross-validation error
+defined by the accuracy. Once this has been done, predict the model against
+the left-out test sample and evaluate the results.
+```{r}
+l <- traintest_df(pred = pred_scale, resp = resp, p = 0.8)
+train_resp <- l[[1]]
+train_pred <- l[[2]]
+test_resp <- l[[3]]
+test_pred <- l[[4]]
+
+### Set recursive feature selection parameters
+set.seed(10)
+cv_splits <- createFolds(train_resp, k=5, returnTrain = TRUE)
+
+rfFuncsMod <- rfFuncs
+rfFuncsMod$fit
+
+rfeCntrl <- rfeControl(functions = rfFuncs,
+                       method="cv", index = cv_splits,
+                       returnResamp = "all",
+                       verbose = FALSE,
+                       rerank=FALSE)
+
+### Set model tuning parameters
+trCntr <- trainControl(method="cv", number = 5, repeats = 1, verbose = FALSE)
+
+### Select sequence of number of variables which should be tested and train model
+n_var <- seq(10)
+
+rfe_model <- rfe(train_pred, train_resp,
+                 metric = "Accuracy", method = "rf", 
+                 sizes = n_var,
+                 rfeControl = rfeCntrl,
+                 trControl = trCntr,
+                 tuneGrid = expand.grid(mtry = n_var))
+
+### Evaluate and plot variable importance
+rfe_model
+
+vi <- list(importance = varImp(rfe_model$fit, scale = TRUE),
+           model = "rf",
+           calledFrom = "varImp")
+class(vi) <- "varImp.train"
+plot(vi)
+
+### Chosse best model and predict against independent test sample
+test_pred <- predict(rfe_model$fit, test_pred)
+
+# THIS WILL BE A GOOD PLACE TO INCLUDE THE KAPPA COMPUTATION
+# REMEMBER TO SAVE THE KAPPA RESULTS WITHIN EACH CROSS-VALIDATION TEST RUN
+# SO ALL 10 KAPPA VALUES ARE AVAILABLE ONCE THE CROSS-VALIDATION HAS BEEN
+# FINISHED
+
+```

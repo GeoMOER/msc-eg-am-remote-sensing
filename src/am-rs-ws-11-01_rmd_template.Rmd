@@ -1,0 +1,103 @@
+---
+title: "W11-1: Variable selection and model tuning"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(rgdal)
+library(sp)
+library(caret)
+
+inpath_ecol <- "D:/active/moc/am-remote-sensing/examples/data/ecology/2015/"
+```
+
+
+### Function for scaling datasets
+```{r}
+scale <- function(df){
+  df_means <- colMeans(df, na.rm = TRUE)
+  df_sds <- apply(df, 2, sd, na.rm=TRUE)
+  df_scale <- lapply(seq(ncol(df)), function(x){
+    (df[,x] - df_means[x]) / df_sds[x]
+    })
+  df_scale <- do.call ("cbind", df_scale)
+  colnames(df_scale) <- colnames(df)
+  return(df_scale)
+  }
+```
+
+
+### Function for creating training and testing datasets
+```{r}
+traintest_df <- function(pred, resp, times = 1, p = 0.75, list = FALSE){
+  train_ids <- createDataPartition(resp, times = times, p = p, list = list)
+
+  train_resp <- resp[train_ids]
+  train_pred <- pred[train_ids, ]
+  
+  test_resp <- resp[-train_ids]
+  test_pred <- pred[-train_ids, ]
+  return(list(train_resp, train_pred, test_resp, test_pred))
+  }
+```
+
+
+### Read datasets
+Read datasets
+```{r}
+ecol_db <- readOGR(paste0(inpath_ecol, "ecol_db.shp"), layer = "ecol_db")
+ecol_db <- data.frame(ecol_db)
+ecol_hg <- readOGR(paste0(inpath_ecol, "ecol_hg.shp"), layer = "ecol_hg")
+ecol_hg <- data.frame(ecol_hg)
+```
+
+
+### Select response variable and scale predictors
+Make sure that the response is a factor (if you want classification)
+```{r}
+ecol <- ecol_hg
+
+coln_resp <- which(names(ecol) == "d12_k5")
+coln_pred <- c(which(names(ecol)=="re01"):which(names(ecol)=="zrsd"))
+
+resp <- ecol[, coln_resp]
+pred <- ecol[, coln_pred]
+
+pred_scale <- scale(pred)
+summary(pred_scale)
+
+# pred_scale <- rbind(pred_scale, pred_scale*1.20, pred_scale*0.80)
+# resp <- factor(c(as.character(resp), as.character(resp), as.character(resp)))
+```
+
+
+### Create training and independent validation data sample
+Consider that the respone variable should be sampled in a stratified manner.
+```{r}
+l <- traintest_df(pred = pred_scale, resp = resp, p = 0.80)
+train_resp <- l[[1]]
+train_pred <- l[[2]]
+test_resp <- l[[3]]
+test_pred <- l[[4]]
+```
+
+### Set recursive feature selection parameters
+```{r}
+
+```
+
+### Set model tuning parameters
+```{r}
+
+```
+
+### Train model incl. recursive feature elimination
+```{r}
+
+# Save model
+save(<my-model>, file = "myFile.RData")
+```
+

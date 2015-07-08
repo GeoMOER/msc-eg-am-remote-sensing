@@ -1,0 +1,31 @@
+---
+title: "W08-2: Lidar resampling"
+output: html_document
+---
+
+In order to speed things up a little, here is a template for a markdown file
+which can be used as part of this worksheet.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+library(raster)
+library(rgdal)
+library(sp)
+
+inpath_lc <- "D:/active/moc/am-remote-sensing/examples/data/"
+```
+
+### List raster datasets derived from Lidar and load crop templates
+```{r}
+lf <- list.files(paste0(inpath_lc, "lidar/"), ...)
+
+db <- raster(paste0(inpath_lc, "templates/mr_dammelsberg_template.tif"))
+names(db) <- "db"
+hg <- raster(paste0(inpath_lc, "templates/mr_heiligengrund_template.tif"))
+names(hg) <- "hg"
+```
+
+### Compute filters and write multi-layer raster datasets to GeoTiff files
+```{r}
+# Your code here
+```
+
